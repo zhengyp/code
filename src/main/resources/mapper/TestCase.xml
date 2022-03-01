@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.TestCaseMapper">
+    <resultMap id="ResultMap" type="com.example.vo.TestCaseVO"/>
+    <resultMap id="RecordsCount" type="integer"/>
+    <select id="findResultByInfo" resultMap="ResultMap,RecordsCount"
+            parameterType="com.example.qo.TestCaseQO" resultType="java.util.List">
+        SELECT SQL_CALC_FOUND_ROWS
+        test_case.name AS caseName,
+        test_case.requirement AS requirement,
+        test_case.sprint AS sprint,
+        test_case.business_component AS businessComponent,
+        test_case.create_time AS createTime,
+        test_case.update_time AS updateTime,
+        test_case.creator AS creator,
+        test_case.updater AS updater,
+        dictionary_item.name AS operateStatusName,
+        dictionary_item.key AS operateStatus,
+        dept.id AS caseType,
+        dept.name AS caseTypeName
+        FROM
+        test_case
+        JOIN dept on testcase.id = dept.id
+        JOIN dictionary_item on test_case.operate_status = dictionary_item.key
+        -- 标题模糊搜索
+        <if test="caseName != null">
+            AND test_case.name LIKE CONCAT('%',#{caseName},'%')
+        </if>
+        <if test="sprint != null">
+            AND test_case.sprint LIKE CONCAT('%',#{sprint},'%')
+        </if>
+
+
+        -- 分页查询
+        LIMIT
+        #{pageNumber},#{pageSize};
+        -- 接着查询符合条件个数
+        SELECT FOUND_ROWS();
+    </select>
+
+</mapper>
